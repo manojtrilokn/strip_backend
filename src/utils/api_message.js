@@ -1,0 +1,16 @@
+exports.API_MESSEGE = {
+    SERVER_ERROR: "Internal Server Error.",
+    INVALID_LOGIN_CREDENTIAL: "Invalid login credentials.",
+    INVALID_ACCESS_TOKEN: "Invalid access token.",
+    INVALID_MOBILE_OR_OTP: "Invalid mobile number or OTP.",
+    MOBILE_ALREADY_USED: "Mobile number already exist.",
+    EMAIL_ALREADY_USED: "Email address already exists.",
+    MOBILE_OTP_SENT: "OTP sent on your mobile number.",
+    EMAIL_OTP_SENT: "OTP sent on your email.",
+    REGISTER_SUCCESS: "Registered successfully.",
+    LOGIN_SUCCESS: "Login successfully.",
+    PROFILE_FOUND:'Profile detail found.',
+    PROFILE_COMPLETED: "Profile completed successfully.",
+    PROFILE_UPDATED: "Profile updated successfully.",
+    LOGOUT_SUCCESS: "Logout successfully.",
+  }

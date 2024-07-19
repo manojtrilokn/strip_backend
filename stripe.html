@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Payment</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        *,
+        html,
+        body {
+            box-sizing: border-box;
+        }
+
+        #card-element {
+            width: 100%;
+            padding: 8px 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .card-form {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-row {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        #card-element {
+            margin-top: 10px;
+        }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="payment-form">
+        <div class="card-form">
+            <h3>Make Intent payment</h3>
+            <form id="card-form">
+                <div class="form-row">
+                    <label for="card-holder-name">Cardholder Name</label>
+                    <input type="text" id="card-holder-name" required>
+                </div>
+                <div class="form-row">
+                    <label for="card-number">Card Number</label>
+                    <div id="card-element">
+                    </div>
+                    <div id="card-errors" role="alert"></div>
+                </div>
+                <button id="save-card-btn" type="submit">Pay</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const stripe = Stripe('pk_test_51PaWrzDug8K5CkMJXcjVVq1wLBBnYGK91S0g4aVX9tTlu6l88qd8u3Ok0Zfju2kXsF3tEF2OhUVnVfUdP70prLfM00sKoNYwpT');
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        card.on('change', ({ error }) => {
+            const displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        document.getElementById('payment-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const response = await fetch('http://192.168.0.173:6060/api/createPayment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: 1000, currency: 'AUD' })
+            });
+
+            const data = await response.json();
+
+            if (!data.clientSecret) {
+                console.error('Client secret missing from response.');
+                return;
+            }
+
+            const result = await stripe.confirmCardPayment(data.clientSecret, {
+                payment_method: {
+                    card: card,
+                    billing_details: {
+                        name: 'Customer Name',
+                        email: 'customer1@yopmail.com',
+                        address: {
+                            line1: '123 Main Sydey',
+                            city: 'Sydney',
+                            state: 'NSW',
+                            postal_code: '94111',
+                            country: 'AU'
+                        }
+                    }
+                },
+                setup_future_usage: 'off_session',
+                receipt_email: 'customer1@yopmail.com'
+            });
+            if (result.error) {
+                console.error(result.error.message);
+            } else {
+                if (result.paymentIntent.status === 'succeeded') {
+                    alert.log('Payment succeeded');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
